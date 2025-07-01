@@ -563,7 +563,10 @@ class ReplacementModel(HookedTransformer):
                 )
             transcoder_output = self.transcoders[layer].decode(transcoder_activations)
             for pos, feature_idx, value in layer_interventions:
-                transcoder_activations[pos, feature_idx] = value
+                if transcoder_activations.ndim == 3:  # has batch dim
+                    transcoder_activations[:, pos, feature_idx] = value
+                else:
+                    transcoder_activations[pos, feature_idx] = value
             new_transcoder_output = self.transcoders[layer].decode(transcoder_activations)
             steering_vector = new_transcoder_output - transcoder_output
             return activations + steering_vector
